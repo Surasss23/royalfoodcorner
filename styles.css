@@ -1,118 +1,127 @@
 body {
     font-family: Arial, sans-serif;
     background-color: #fff;
-    color: black;
+    color: #333;
     text-align: center;
-    padding: 0;
     margin: 0;
-}
-
-.royal-title, .royal-tagline {
-    font-family: 'Georgia', serif;
+    padding: 0;
 }
 
 header {
-    background: black;
-    color: white;
+    background-color: #000;
+    color: #fff;
     padding: 20px;
 }
 
-.order-title {
-    font-size: 24px;
+.royal-title {
+    font-size: 2.5em;
+    margin: 0;
+}
+
+.royal-tagline {
     font-style: italic;
+    margin: 5px 0 0;
+}
+
+.order-title {
+    font-size: 1.8em;
     margin: 20px 0;
 }
 
-.food-container {
+.menu-container {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
     gap: 20px;
+    padding: 20px;
 }
 
-.food-box {
-    background: black;
-    color: white;
-    width: 280px;
+.food-item {
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    width: 250px;
     padding: 15px;
-    border-radius: 15px;
     text-align: center;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-.food-box img {
+.food-item img {
     width: 100%;
-    height: 180px;
+    height: 150px;
+    object-fit: cover;
     border-radius: 10px;
 }
 
-.food-box h3 {
-    font-size: 20px;
+.food-item h3 {
     margin: 10px 0;
+    font-size: 1.2em;
 }
 
-.food-box p {
-    font-size: 16px;
+.food-item p {
     margin: 5px 0;
+    font-size: 1em;
 }
 
 button {
-    background-color: white;
-    color: black;
-    padding: 10px;
-    margin: 5px;
-    border: 2px solid black;
-    border-radius: 10px;
+    background-color: #000;
+    color: #fff;
+    border: none;
+    padding: 10px 15px;
+    margin: 10px 5px 0;
     cursor: pointer;
-    transition: 0.3s;
+    border-radius: 5px;
+    font-size: 1em;
+    transition: background-color 0.3s;
 }
 
 button:hover {
-    background-color: black;
-    color: white;
+    background-color: #444;
 }
 
 #cart-btn {
     position: fixed;
     bottom: 20px;
     right: 20px;
-    background-color: black;
-    color: white;
-    padding: 12px 25px;
-    border-radius: 25px;
-    font-size: 18px;
-    font-weight: bold;
-    border: 2px solid white;
+    background-color: #000;
+    color: #fff;
+    padding: 15px 20px;
+    border-radius: 30px;
+    font-size: 1.2em;
     cursor: pointer;
-    transition: 0.3s;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-#cart-btn:hover {
-    background-color: white;
-    color: black;
-    border: 2px solid black;
-}
-
-.cart-modal {
+#cart {
     display: none;
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.8);
-}
-
-.cart-content {
-    background: white;
-    padding: 20px;
-    width: 300px;
-    margin: 100px auto;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #fff;
+    border: 1px solid #ddd;
     border-radius: 10px;
+    width: 300px;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-.close {
-    float: right;
-    font-size: 20px;
-    cursor: pointer;
+#cart h2 {
+    margin-top: 0;
 }
+
+#cart-items {
+    list-style-type: none;
+    padding: 0;
+    text-align: left;
+}
+
+#cart-items li {
+    margin: 10px 0;
+}
+
+#total-price {
+    font-weight: bold;
+    margin: 15px 0;
+}
+
