@@ -1,118 +1,83 @@
-body {
-    font-family: Arial, sans-serif;
-    background-color: #fff;
-    color: black;
-    text-align: center;
-    padding: 0;
-    margin: 0;
+const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS1IUyfhP0Q-WI5g8T1I9yzBZskCJYkDnLwZRibYpqCWBhJwl1lD8mYm7q7XYkYVTx8ei2nK7Zl0uqb/pub?output=csv";
+let cart = [];
+
+async function fetchFoodItems() {
+    try {
+        const response = await fetch(sheetURL);
+        const data = await response.text();
+        const rows = data.split("\n").slice(1); // Skip Header Row
+
+        const foodContainer = document.getElementById("food-container");
+        foodContainer.innerHTML = "";
+
+        rows.forEach(row => {
+            const cols = row.split(",");
+            if (cols.length >= 4) {
+                const [image, name, singlePrice, fullPrice] = cols;
+                const foodBox = document.createElement("div");
+                foodBox.className = "food-box";
+
+                foodBox.innerHTML = `
+                    <img src="${image.trim()}" alt="${name.trim()}">
+                    <h3>${name.trim()}</h3>
+                    <p>Single: ₹${singlePrice.trim()} | Full: ₹${fullPrice.trim()}</p>
+                    <button onclick="addToCart('${name.trim()}', ${singlePrice.trim()}, 'Single')">Add Single ₹${singlePrice.trim()}</button>
+                    <button onclick="addToCart('${name.trim()}', ${fullPrice.trim()}, 'Full')">Add Full ₹${fullPrice.trim()}</button>
+                `;
+                foodContainer.appendChild(foodBox);
+            }
+        });
+    } catch (error) {
+        console.error("Error fetching food data:", error);
+    }
 }
 
-.royal-title, .royal-tagline {
-    font-family: 'Georgia', serif;
+function addToCart(name, price, type) {
+    cart.push({ name, price, type });
+    alert(`${name} (${type}) added to cart!`);
 }
 
-header {
-    background: black;
-    color: white;
-    padding: 20px;
+function openCart() {
+    document.getElementById("cart-modal").style.display = "block";
+    updateCart();
 }
 
-.order-title {
-    font-size: 24px;
-    font-style: italic;
-    margin: 20px 0;
+function closeCart() {
+    document.getElementById("cart-modal").style.display = "none";
 }
 
-.food-container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 20px;
+function updateCart() {
+    const cartItems = document.getElementById("cart-items");
+    cartItems.innerHTML = "";
+    let total = 0;
+
+    cart.forEach((item, index) => {
+        total += Number(item.price);
+        const li = document.createElement("li");
+        li.innerHTML = `${item.name} (${item.type}) - ₹${item.price} <button onclick="removeFromCart(${index})">X</button>`;
+        cartItems.appendChild(li);
+    });
+
+    const deliveryText = `Total ₹${total} + Delivery Charges (As per delivery app)`;
+    const totalLi = document.createElement("li");
+    totalLi.innerHTML = `<strong>${deliveryText}</strong>`;
+    cartItems.appendChild(totalLi);
 }
 
-.food-box {
-    background: black;
-    color: white;
-    width: 280px;
-    padding: 15px;
-    border-radius: 15px;
-    text-align: center;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+function removeFromCart(index) {
+    cart.splice(index, 1);
+    updateCart();
 }
 
-.food-box img {
-    width: 100%;
-    height: 180px;
-    border-radius: 10px;
+function placeOrder() {
+    let message = "Order Details:\n";
+    cart.forEach(item => {
+        message += `${item.name} (${item.type}) - ₹${item.price}\n`;
+    });
+    message += "Total + Delivery Charges (As per delivery app)";
+    
+    const whatsappURL = `https://wa.me/7989386499?text=${encodeURIComponent(message)}`;
+    window.open(whatsappURL, "_blank");
 }
 
-.food-box h3 {
-    font-size: 20px;
-    margin: 10px 0;
-}
-
-.food-box p {
-    font-size: 16px;
-    margin: 5px 0;
-}
-
-button {
-    background-color: white;
-    color: black;
-    padding: 10px;
-    margin: 5px;
-    border: 2px solid black;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: 0.3s;
-}
-
-button:hover {
-    background-color: black;
-    color: white;
-}
-
-#cart-btn {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    background-color: black;
-    color: white;
-    padding: 12px 25px;
-    border-radius: 25px;
-    font-size: 18px;
-    font-weight: bold;
-    border: 2px solid white;
-    cursor: pointer;
-    transition: 0.3s;
-}
-
-#cart-btn:hover {
-    background-color: white;
-    color: black;
-    border: 2px solid black;
-}
-
-.cart-modal {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.8);
-}
-
-.cart-content {
-    background: white;
-    padding: 20px;
-    width: 300px;
-    margin: 100px auto;
-    border-radius: 10px;
-}
-
-.close {
-    float: right;
-    font-size: 20px;
-    cursor: pointer;
-}
+fetchFoodItems();
