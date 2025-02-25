@@ -9,23 +9,22 @@
 <body>
 
     <header>
-        <h1 class="royal-title">ROYAL FOOD CORNER</h1>
+        <h1 class="royal-title">Royal Food Corner</h1>
         <p class="royal-tagline">"Dine Like a King, Savor Like a Connoisseur."</p>
     </header>
 
     <h2 class="order-title">Order Food Online</h2>
 
-    <div id="food-container" class="food-container"></div>
+    <div id="menu-container" class="menu-container"></div>
 
-    <button id="cart-btn" onclick="openCart()">View Cart</button>
+    <button id="cart-btn" onclick="toggleCart()">View Cart</button>
 
-    <div id="cart-modal" class="cart-modal">
-        <div class="cart-content">
-            <span class="close" onclick="closeCart()">&times;</span>
-            <h2>Your Cart</h2>
-            <ul id="cart-items"></ul>
-            <button id="order-btn" onclick="placeOrder()">Order Now</button>
-        </div>
+    <div id="cart" class="cart">
+        <h2>Your Cart</h2>
+        <ul id="cart-items"></ul>
+        <p id="total-price">Total: ₹0 + Delivery Charges</p>
+        <button id="order-now" onclick="placeOrder()">Order via WhatsApp</button>
+        <button onclick="toggleCart()">Close Cart</button>
     </div>
 
     <script src="script.js"></script>
