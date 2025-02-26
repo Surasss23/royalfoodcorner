@@ -5,26 +5,99 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Royal Food Corner</title>
     <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
+    <!-- Hero Section -->
+    <div class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1>Royal Food Corner</h1>
+                <p>Experience the royal taste of authentic Indian cuisine, crafted with passion and served with elegance.</p>
+                <div class="contact-info">
+                    <div>
+                        <p class="label">Location</p>
+                        <p>Mangalhat</p>
+                    </div>
+                    <div>
+                        <p class="label">Hours</p>
+                        <p>02 PM - 12:30 AM</p>
+                    </div>
+                    <div>
+                        <p class="label">Contact</p>
+                        <p>+91 70759 54214</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    <header>
-        <h1 class="royal-title">Royal Food Corner</h1>
-        <p class="royal-tagline">"Dine Like a King, Savor Like a Connoisseur."</p>
-    </header>
+    <!-- Main Content -->
+    <div class="container main-content">
+        <div class="menu-section">
+            <h2>Our Menu</h2>
+            <div id="menu-items" class="menu-grid"></div>
+        </div>
 
-    <h2 class="order-title">Order Food Online</h2>
+        <!-- Cart Section -->
+        <div class="cart-section">
+            <div class="cart-container">
+                <h2>Your Order</h2>
+                <div id="cart-items" class="cart-items"></div>
+                <div class="cart-total">
+                    <span>Total</span>
+                    <span id="cart-total">₹0</span>
+                </div>
+                <button id="order-button" class="button primary" onclick="handleOrder()">
+                    <i class="fab fa-whatsapp"></i> Order on WhatsApp
+                </button>
+            </div>
 
-    <div id="menu-container" class="menu-container"></div>
+            <div class="action-buttons">
+                <button class="button" onclick="window.open('https://maps.app.goo.gl/VJBm7Qb4eoNn3j9t8')">
+                    <i class="fas fa-directions"></i> Get Directions
+                </button>
+                <button class="button secondary" onclick="window.open('https://www.instagram.com/royal_foodcorner?utm_source=qr&igsh=MXM4OWl3Y2w5Y2UxZQ==')">
+                    <i class="fab fa-instagram"></i> Follow on Instagram
+                </button>
+                <button class="button outline" onclick="window.open('https://g.page/royalfoodcorner/review')">
+                    <i class="fab fa-google"></i> Rate us on Google
+                </button>
+            </div>
+        </div>
+    </div>
 
-    <button id="cart-btn" onclick="toggleCart()">View Cart</button>
-
-    <div id="cart" class="cart">
-        <h2>Your Cart</h2>
-        <ul id="cart-items"></ul>
-        <p id="total-price">Total: ₹0 + Delivery Charges</p>
-        <button id="order-now" onclick="placeOrder()">Order via WhatsApp</button>
-        <button onclick="toggleCart()">Close Cart</button>
+    <!-- Reviews Section -->
+    <div class="reviews-section">
+        <div class="container">
+            <h2>Customer Reviews</h2>
+            <div class="reviews-grid">
+                <div class="review-form">
+                    <h3>Leave a Review</h3>
+                    <form id="review-form" onsubmit="handleReviewSubmit(event)">
+                        <div class="form-group">
+                            <label>Your Name</label>
+                            <input type="text" name="customerName" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Rating</label>
+                            <div class="rating-input">
+                                <div id="rating-stars" class="rating"></div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Your Review</label>
+                            <textarea name="comment" required></textarea>
+                        </div>
+                        <button type="submit" class="button primary">Submit Review</button>
+                    </form>
+                </div>
+                <div class="reviews-list">
+                    <h3>What Our Customers Say</h3>
+                    <div id="reviews-container"></div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="script.js"></script>
