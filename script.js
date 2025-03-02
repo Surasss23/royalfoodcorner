@@ -152,7 +152,7 @@ function handleOrder() {
     )
     .join("\n");
 
-  const phoneNumber = "+917075954214"; // ✅ Replace with actual number
+  const phoneNumber = "+917989386499"; // ✅ Replace with actual number
   const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(
     `🛍️ *New Order Received:*\n\n${message}\n\n*Total: ₹${calculateTotal()}*`
   )}`;
