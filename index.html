@@ -1,72 +1,93 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Royal Food Corner</title>
-    <link rel="stylesheet" href="styles.css">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Royal Food Corner</title>
+  <meta name="description" content="Royal Food Corner - Dine Like a King, Savor Like a Connoisseur" />
+  <meta name="author" content="Royal Food Corner" />
+  <meta property="og:image" content="/og-image.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <!-- Hero Section -->
-    <div class="hero">
-        <div class="container">
-            <div class="hero-content">
-                <h1>Royal Food Corner</h1>
-                <p>Experience the royal taste of authentic Indian cuisine, crafted with passion and served with elegance.</p>
-                <div class="contact-info">
-                    <div>
-                        <p class="label">Location</p>
-                        <p>Mangalhat,Sitaram Bagh</p>
-                    </div>
-                    <div>
-                        <p class="label">Hours</p>
-                        <p>02 PM - 12:30 AM</p>
-                    </div>
-                    <div>
-                        <p class="label">Contact</p>
-                        <p>+91 70759 54214</p>
-                    </div>
-                </div>
-            </div>
+  <div id="root">
+    <!-- Header -->
+    <header class="header">
+      <div class="container">
+        <div class="header-content">
+          <div class="crown-left"></div>
+          <h1 class="brand-title">Royal Food Corner</h1>
+          <div class="crown-right"></div>
         </div>
+        <p class="brand-slogan">Dine Like a King, Savor Like a Connoisseur.</p>
+        <div class="divider"></div>
+      </div>
+    </header>
+
+    <!-- Main content -->
+    <main>
+      <section class="menu-section container" id="menu-section">
+        <h2 class="section-title">Our Menu</h2>
+        <div class="menu-grid" id="menu-items-container">
+          <!-- Menu items will be loaded dynamically -->
+          <div class="menu-item-placeholder"></div>
+          <div class="menu-item-placeholder"></div>
+          <div class="menu-item-placeholder"></div>
+          <div class="menu-item-placeholder"></div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Cart button -->
+    <button id="cart-toggle-btn" class="cart-toggle-btn">
+      <span class="cart-icon"></span>
+      <span id="cart-count" class="cart-count">0</span>
+    </button>
+
+    <!-- Cart overlay -->
+    <div id="cart-overlay" class="cart-overlay hidden">
+      <div class="cart-container">
+        <div class="cart-header">
+          <h2>Your Cart</h2>
+          <button id="close-cart-btn" class="close-cart-btn">×</button>
+        </div>
+        
+        <div id="cart-items" class="cart-items">
+          <!-- Cart items will be loaded dynamically -->
+          <div id="empty-cart-message" class="empty-cart-message">
+            <div class="cart-icon-large"></div>
+            <p>Your cart is empty</p>
+          </div>
+        </div>
+        
+        <div id="cart-footer" class="cart-footer hidden">
+          <div class="cart-total">
+            <span>Total:</span>
+            <span id="total-amount">₹0</span>
+          </div>
+          <p class="delivery-note">Delivery charges will be calculated as per delivery app.</p>
+          <button id="order-now-btn" class="order-now-btn">Order Now via WhatsApp</button>
+          <button id="clear-cart-btn" class="clear-cart-btn">Clear Cart</button>
+        </div>
+      </div>
     </div>
 
-    <!-- Main Content -->
-    <div class="container main-content">
-        <div class="menu-section">
-            <h2>Our Menu</h2>
-            <div id="menu-items" class="menu-grid"></div>
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="container">
+        <h2 class="footer-title">Royal Food Corner</h2>
+        <p class="footer-tagline">Delicious food delivered straight to your doorstep</p>
+        <div class="footer-contact">
+          <p>Contact: +91 7989386499</p>
+          <p>&copy; <span id="current-year"></span> Royal Food Corner. All rights reserved.</p>
         </div>
+      </div>
+    </footer>
+  </div>
 
-        <!-- Cart Section -->
-        <div class="cart-section">
-            <div class="cart-container">
-                <h2>Your Order</h2>
-                <div id="cart-items" class="cart-items"></div>
-                <div class="cart-total">
-                    <span>Total</span>
-                    <span id="cart-total">₹0</span>
-                </div>
-                <button id="order-button" class="button primary" onclick="handleOrder()">
-                    <i class="fab fa-whatsapp"></i> Order on WhatsApp
-                </button>
-            </div>
-
-            <div class="action-buttons">
-                <button class="button" onclick="window.open('https://maps.app.goo.gl/VJBm7Qb4eoNn3j9t8')">
-                    <i class="fas fa-directions"></i> Get Directions
-                </button>
-                <button class="button secondary" onclick="window.open('https://www.instagram.com/royal_foodcorner?utm_source=qr&igsh=MXM4OWl3Y2w5Y2UxZQ==')">
-                    <i class="fab fa-instagram"></i> Follow on Instagram
-                </button>
-                <button class="button outline" onclick="window.open('https://g.page/royalfoodcorner/review')">
-                    <i class="fab fa-google"></i> Rate us on Google
-                </button>
-            </div>
-        </div>
-    </div>
-    <script src="script.js"></script>
+  <!-- IMPORTANT: DO NOT REMOVE THIS SCRIPT TAG OR THIS VERY COMMENT! -->
+  <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
+  <script src="script.js"></script>
 </body>
 </html>
