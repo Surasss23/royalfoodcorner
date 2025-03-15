@@ -1,183 +1,365 @@
+// Global state for cart and menu items
+let cart = [];
+let menuItems = [];
 
-// ✅ Cart Management
-let cart = loadCart();
+// DOM elements
+const menuItemsContainer = document.getElementById('menu-items-container');
+const cartToggleBtn = document.getElementById('cart-toggle-btn');
+const cartOverlay = document.getElementById('cart-overlay');
+const closeCartBtn = document.getElementById('close-cart-btn');
+const cartItemsContainer = document.getElementById('cart-items');
+const emptyCartMessage = document.getElementById('empty-cart-message');
+const cartCount = document.getElementById('cart-count');
+const cartFooter = document.getElementById('cart-footer');
+const totalAmountElement = document.getElementById('total-amount');
+const orderNowBtn = document.getElementById('order-now-btn');
+const clearCartBtn = document.getElementById('clear-cart-btn');
+const currentYearElement = document.getElementById('current-year');
 
-function loadCart() {
-  const savedCart = localStorage.getItem("cart");
-  return savedCart ? JSON.parse(savedCart) : [];
-}
+// Set current year for the footer
+currentYearElement.textContent = new Date().getFullYear();
 
-function saveCart() {
-  localStorage.setItem("cart", JSON.stringify(cart));
-  renderCart();
-}
+// Event listeners
+document.addEventListener('DOMContentLoaded', initializeApp);
+cartToggleBtn.addEventListener('click', toggleCart);
+closeCartBtn.addEventListener('click', toggleCart);
+orderNowBtn.addEventListener('click', handleOrderNow);
+clearCartBtn.addEventListener('click', clearCart);
 
-function addToCart(menuItem, isFullSize) {
-  const existingItem = cart.find(item => item.id === menuItem.id && item.isFullSize === isFullSize);
-
-  if (existingItem) {
-    existingItem.quantity += 1;
-  } else {
-    cart.push({
-      id: menuItem.id,
-      name: menuItem.name, // ✅ Ensure Name is Stored
-      quantity: 1,
-      isFullSize,
-      price: isFullSize ? menuItem.fullPrice : menuItem.singlePrice,
-    });
-  }
-
-  saveCart();
-  showToast(`🛒 Added to Cart: ${menuItem.name}`);
-}
-
-function removeFromCart(id, isFullSize) {
-  cart = cart.filter(item => !(item.id === id && item.isFullSize === isFullSize));
-  saveCart();
-}
-
-function calculateTotal() {
-  return cart.reduce((total, item) => total + item.price * item.quantity, 0);
-}
-
-// ✅ Google Sheet se Menu Fetch Karna
-async function fetchMenuItems() {
-  const sheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTe1TOsmeLBW4qqahFR_HFlYCp-XZyjKJRPyKSc63t3-7rlNmjAdBfhsHkv8hjgOZfuYkMJfFI3iOKb/pub?output=csv";
-
+/**
+ * Initialize the application
+ */
+async function initializeApp() {
   try {
-    const response = await fetch(sheetUrl);
-    const data = await response.text();
-
-    // CSV Ko Array Me Convert Karo
-    const rows = data.split("\n").map(row => row.split(","));
-
-    // Headers (Column Names) Fetch Karo
-    const headers = rows[0].map(h => h.trim());
-
-    // Data Format Karo
-    const menuItems = rows.slice(1).map(row => {
-      let obj = {};
-      headers.forEach((header, index) => {
-        obj[header] = row[index]?.trim(); // ? to avoid undefined values
-      });
-
-      // Price values ko number me convert karo
-      obj.id = Number(obj.id);
-      obj.singlePrice = Number(obj.singlePrice);
-      obj.fullPrice = Number(obj.fullPrice);
-
-      return obj;
-    });
-
-    renderMenu(menuItems);
+    await fetchMenuItems();
+    renderMenuItems();
+    loadCartFromStorage();
+    updateCartDisplay();
+    
+    // Set up polling to check for updates every 5 minutes
+    setInterval(fetchMenuItems, 5 * 60 * 1000);
   } catch (error) {
-    console.error("Error fetching menu:", error);
-    showToast("⚠️ Failed to load menu items", "error");
+    console.error('Failed to initialize app:', error);
+    showToast('Error loading menu items', 'error');
   }
 }
 
-function renderMenu(menuItems) {
-  const menuGrid = document.getElementById("menu-items");
-  menuGrid.innerHTML = menuItems
-    .map(
-      item => `
-      <div class="menu-item">
-        <img src="${item.imageUrl}" alt="${item.name}">
-        <div class="menu-item-content">
-          <h3>${item.name}</h3>
-          <p>${item.description}</p>
-          <div class="price-section">
-            <div>
-              <p>Single: ₹${item.singlePrice}</p>
-              <p>Full: ₹${item.fullPrice}</p>
-            </div>
-            <div class="buttons">
-              <button onclick='addToCart(${JSON.stringify(item)}, false)' class="button primary">
-                Add Single
-              </button>
-              <button onclick='addToCart(${JSON.stringify(item)}, true)' class="button secondary">
-                Add Full
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    `
-    )
-    .join("");
-}
-
-// ✅ Rendering Cart Properly
-function renderCart() {
-  const cartItems = document.getElementById("cart-items");
-  const cartTotal = document.getElementById("cart-total");
-
-  if (cart.length === 0) {
-    cartItems.innerHTML = "<p>Your cart is empty</p>";
-  } else {
-    cartItems.innerHTML = cart
-      .map(
-        (item, index) => `
-      <div class="cart-item">
-        <div>
-          <p><strong>${item.name}</strong></p>
-          <p>${item.quantity}x ${item.isFullSize ? "Full" : "Single"}</p>
-        </div>
-        <div>
-          <p>₹${item.price * item.quantity}</p>
-          <button onclick="removeFromCart(${item.id}, ${item.isFullSize})" class="button outline">Remove</button>
-        </div>
-      </div>
-    `
-      )
-      .join("");
+/**
+ * Fetch menu items from Google Sheets
+ */
+async function fetchMenuItems() {
+  try {
+    const response = await fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vTe1TOsmeLBW4qqahFR_HFlYCp-XZyjKJRPyKSc63t3-7rlNmjAdBfhsHkv8hjgOZfuYkMJfFI3iOKb/pub?output=csv');
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch menu data');
+    }
+    
+    const csvText = await response.text();
+    
+    // Parse CSV data
+    const rows = csvText.split('\n');
+    const headers = rows[0].split(',');
+    
+    // Map CSV data to menu items
+    const items = [];
+    
+    for (let i = 1; i < rows.length; i++) {
+      if (!rows[i].trim()) continue; // Skip empty rows
+      
+      const values = rows[i].split(',');
+      const item = {
+        id: parseInt(values[0] || '0'),
+        name: values[1] || 'Unknown Item',
+        description: values[2] || '',
+        singlePrice: parseInt(values[3] || '0'),
+        fullPrice: parseInt(values[4] || '0'),
+        image: values[5] || '',
+        category: values[6] || 'Other'
+      };
+      
+      items.push(item);
+    }
+    
+    menuItems = items;
+    console.log('Fetched menu items:', menuItems);
+    
+    if (menuItemsContainer) {
+      renderMenuItems();
+      showToast(`Successfully loaded ${items.length} menu items`, 'success');
+    }
+  } catch (error) {
+    console.error('Error fetching menu items:', error);
+    showToast('Could not load the menu items. Please try again later.', 'error');
   }
-
-  cartTotal.textContent = `₹${calculateTotal()}`;
 }
 
-// ✅ WhatsApp Order Button (Now Sends Proper Name)
-function handleOrder() {
-  if (cart.length === 0) {
-    showToast("⚠️ Please add items to cart first", "error");
+/**
+ * Render menu items in the container
+ */
+function renderMenuItems() {
+  // Clear loading placeholders
+  menuItemsContainer.innerHTML = '';
+  
+  if (menuItems.length === 0) {
+    const noMenuElement = document.createElement('div');
+    noMenuElement.className = 'no-menu-message';
+    noMenuElement.innerHTML = `
+      <div class="empty-menu">
+        <div class="utensils-icon"></div>
+        <h2>Menu Unavailable</h2>
+        <p>We couldn't load the menu items at this time. Please check back later.</p>
+      </div>
+    `;
+    menuItemsContainer.appendChild(noMenuElement);
     return;
   }
-
-  const message = cart
-    .map(
-      item =>
-        `${item.quantity}x ${item.name} (${item.isFullSize ? "Full" : "Single"}) - ₹${
-          item.price * item.quantity
-        }`
-    )
-    .join("\n");
-
-  const phoneNumber = "+917989386499"; // ✅ Replace with actual number
-  const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(
-    `🛍️ *New Order Received:*\n\n${message}\n\n*Total: ₹${calculateTotal()}*`
-  )}`;
-
-  window.open(whatsappUrl);
   
-  cart = [];
-  saveCart();
+  // Create and append menu items
+  menuItems.forEach(item => {
+    const menuItemElement = document.createElement('div');
+    menuItemElement.className = 'menu-item';
+    menuItemElement.innerHTML = `
+      <img src="${item.image || '/placeholder.svg'}" alt="${item.name}" class="menu-item-image" onerror="this.src='/placeholder.svg'">
+      <h3 class="menu-item-title">${item.name}</h3>
+      ${item.description ? `<p class="menu-item-description">${item.description}</p>` : ''}
+      <div class="menu-item-actions">
+        <button id="btn-${item.id}-single" class="btn-cart">Add Single - ₹${item.singlePrice}</button>
+        <button id="btn-${item.id}-full" class="btn-cart light">Add Full - ₹${item.fullPrice}</button>
+      </div>
+    `;
+    
+    menuItemsContainer.appendChild(menuItemElement);
+    
+    // Add event listeners to the buttons
+    const singleBtn = document.getElementById(`btn-${item.id}-single`);
+    const fullBtn = document.getElementById(`btn-${item.id}-full`);
+    
+    singleBtn.addEventListener('click', () => addToCart(item, 'single'));
+    fullBtn.addEventListener('click', () => addToCart(item, 'full'));
+  });
 }
 
-// ✅ Utility Functions
-function showToast(message, type = "success") {
-  const toast = document.createElement("div");
+/**
+ * Add an item to the cart
+ */
+function addToCart(item, portion) {
+  const selectedItem = {
+    ...item,
+    selectedPortion: portion,
+    price: portion === 'single' ? item.singlePrice : item.fullPrice,
+  };
+  
+  cart.push(selectedItem);
+  saveCartToStorage();
+  updateCartDisplay();
+  
+  // Add animation to button
+  const btnElement = document.getElementById(`btn-${item.id}-${portion}`);
+  if (btnElement) {
+    btnElement.classList.add('animate-scale-up');
+    setTimeout(() => {
+      btnElement.classList.remove('animate-scale-up');
+    }, 300);
+  }
+  
+  showToast(`${item.name} (${portion}) has been added to your cart.`, 'success');
+}
+
+/**
+ * Remove an item from the cart
+ */
+function removeFromCart(index) {
+  cart.splice(index, 1);
+  saveCartToStorage();
+  updateCartDisplay();
+  showToast('Item removed from cart', 'info');
+}
+
+/**
+ * Clear the entire cart
+ */
+function clearCart() {
+  cart = [];
+  saveCartToStorage();
+  updateCartDisplay();
+  showToast('Cart has been cleared', 'info');
+}
+
+/**
+ * Toggle the cart overlay visibility
+ */
+function toggleCart() {
+  cartOverlay.classList.toggle('hidden');
+  updateCartDisplay();
+}
+
+/**
+ * Update the cart display with current items
+ */
+function updateCartDisplay() {
+  // Update cart count
+  cartCount.textContent = cart.length;
+  
+  // Show/hide empty cart message and footer
+  if (cart.length === 0) {
+    emptyCartMessage.classList.remove('hidden');
+    cartFooter.classList.add('hidden');
+    cartItemsContainer.innerHTML = '';
+    cartItemsContainer.appendChild(emptyCartMessage);
+  } else {
+    emptyCartMessage.classList.add('hidden');
+    cartFooter.classList.remove('hidden');
+    
+    // Clear existing items
+    cartItemsContainer.innerHTML = '';
+    
+    // Add each cart item
+    cart.forEach((item, index) => {
+      const cartItemElement = document.createElement('div');
+      cartItemElement.className = 'cart-item';
+      cartItemElement.innerHTML = `
+        <div class="cart-item-details">
+          <div class="cart-item-info">
+            <h3>${item.name}</h3>
+            <p class="cart-item-portion">${item.selectedPortion === 'single' ? 'Single' : 'Full'}</p>
+            <p class="cart-item-price">₹${item.price}</p>
+          </div>
+          <button class="remove-from-cart-btn" data-index="${index}">×</button>
+        </div>
+      `;
+      
+      cartItemsContainer.appendChild(cartItemElement);
+      
+      // Add event listener to remove button
+      const removeBtn = cartItemElement.querySelector('.remove-from-cart-btn');
+      removeBtn.addEventListener('click', () => removeFromCart(index));
+    });
+    
+    // Calculate and update total amount
+    const totalAmount = cart.reduce((total, item) => total + item.price, 0);
+    totalAmountElement.textContent = `₹${totalAmount}`;
+  }
+}
+
+/**
+ * Handle Order Now button click
+ */
+function handleOrderNow() {
+  // Format the order message for WhatsApp
+  const phoneNumber = "7075954214";
+  const orderItems = cart.map(item => 
+    `${item.name} (${item.selectedPortion === 'single' ? 'Single' : 'Full'}) - ₹${item.price}`
+  ).join('\n');
+  
+  const totalAmount = cart.reduce((total, item) => total + item.price, 0);
+  const message = `Order Details:\n${orderItems}\nTotal: ₹${totalAmount} + Delivery charges as per delivery app.`;
+  
+  // Encode the message for URL
+  const encodedMessage = encodeURIComponent(message);
+  
+  // Open WhatsApp with the pre-filled message
+  window.open(`https://wa.me/${phoneNumber}?text=${encodedMessage}`, '_blank');
+}
+
+/**
+ * Save cart to local storage
+ */
+function saveCartToStorage() {
+  localStorage.setItem('royalFoodCart', JSON.stringify(cart));
+}
+
+/**
+ * Load cart from local storage
+ */
+function loadCartFromStorage() {
+  const savedCart = localStorage.getItem('royalFoodCart');
+  if (savedCart) {
+    try {
+      cart = JSON.parse(savedCart);
+    } catch (error) {
+      console.error('Error parsing cart from storage:', error);
+      cart = [];
+    }
+  }
+}
+
+/**
+ * Show a toast notification
+ */
+function showToast(message, type = 'info') {
+  // Create toast container if it doesn't exist
+  let toastContainer = document.querySelector('.toast-container');
+  if (!toastContainer) {
+    toastContainer = document.createElement('div');
+    toastContainer.className = 'toast-container';
+    document.body.appendChild(toastContainer);
+    
+    // Add styles for toast container
+    const style = document.createElement('style');
+    style.textContent = `
+      .toast-container {
+        position: fixed;
+        bottom: 1rem;
+        left: 1rem;
+        z-index: 1000;
+      }
+      
+      .toast {
+        background-color: white;
+        color: #333;
+        padding: 0.75rem 1rem;
+        border-radius: 0.375rem;
+        margin-bottom: 0.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        display: flex;
+        align-items: center;
+        min-width: 16rem;
+        max-width: 24rem;
+        animation: toast-in 0.3s ease-out forwards;
+      }
+      
+      .toast.success {
+        border-left: 4px solid #10B981;
+      }
+      
+      .toast.error {
+        border-left: 4px solid #EF4444;
+      }
+      
+      .toast.info {
+        border-left: 4px solid #3B82F6;
+      }
+      
+      @keyframes toast-in {
+        from {
+          transform: translateY(1rem);
+          opacity: 0;
+        }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+  
+  // Create toast
+  const toast = document.createElement('div');
   toast.className = `toast ${type}`;
   toast.textContent = message;
-  document.body.appendChild(toast);
-
+  
+  // Add to container
+  toastContainer.appendChild(toast);
+  
+  // Remove after delay
   setTimeout(() => {
-    toast.remove();
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateY(1rem)';
+    toast.style.transition = 'opacity 0.3s, transform 0.3s';
+    setTimeout(() => {
+      toast.remove();
+    }, 300);
   }, 3000);
 }
-
-// ✅ Initialize
-document.addEventListener("DOMContentLoaded", () => {
-  cart = loadCart();
-  fetchMenuItems(); // ✅ Google Sheet se data fetch hoga
-  renderCart();
-});
